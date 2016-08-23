@@ -1,0 +1,34 @@
+{
+  "name": "react-serializer",
+  "version": "0.0.1",
+  "description": "A module for serializing (and de-serializing) react components into (and out of) JSON.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finetype/react-serializer.git"
+  },
+  "dependencies": {
+    "downloadjs": "^1.4.6",
+    "react": "^0.14.3"
+  },
+  "keywords": [
+    "serialize",
+    "deserialize",
+    "JSON",
+    "json",
+    "jsx",
+    "react",
+    "marshal",
+    "hydrate",
+    "dehydrate"
+  ],
+  "author": "Kyle Baker <finesttype@gmail.com> (http://kylebaker.io)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/finetype/react-serializer/issues"
+  },
+  "homepage": "https://github.com/finetype/react-serializer#readme"
+}
