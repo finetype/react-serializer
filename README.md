@@ -20,7 +20,6 @@ Now let's get it back!
 1. Let's go into the component you just serialized, and import the 'Deserialize' module.
 2. Have the parent of this component pass in the values you copy/pasted out of testoutput.js as a prop, called "serialized" (or for now, just save it as a local variable, whatever).
 3. Have your render function `return (<Deserialize serialized={this.props.serialized} />)`
-4. Let's rewrite that render function again, this time to contain the 
-5. Voila!
+4. Voila!
 
 You can install dev dependencies and run the test suite with `npm test`, which will help if you want to contribute pull requests. Please add new tests if you add new features.
