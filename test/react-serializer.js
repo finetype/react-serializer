@@ -77,9 +77,11 @@ describe('core.serialize', function() {
 });
 
 describe('core.deserialize', function() {
+  // coverage for deserializing is not ideal.
   it('turns serialized input into React virtualDOM elements', function() {
     var deserialized = core.deserialize(utils.serializedNestedComponent);
-    (React.isValidElement(deserialized)).should.equal.true
+    expect(React.isValidElement(deserialized)).to.equal(true);
+    // ideally add better coverage here.
   });
   it('replaces serialized function string names with corresponding functions', function() {
     var node = ['p', { propertyName: { serializedFunction: 'propertyName0'} }];
@@ -119,12 +121,13 @@ describe('core.serialize -> core.deserialize, integrated', function() {
 // });
 
 describe('Deserialize React Class', function() {
+  // coverage for deserializing is not ideal.
   it('renders the deserialized component', function() {
     var deserializedComponent = React.createElement(Deserialize, {serialized: utils.serializedNestedComponent});
-    (React.isValidElement(deserializedComponent)).should.be.true
+    expect(React.isValidElement(deserializedComponent)).to.equal(true);
   });
   it('also accepts JSON', function() {
     var deserializedComponent = React.createElement(Deserialize, {serialized: utils.stringifiedSerializedComponent});
-    (React.isValidElement(deserializedComponent)).should.be.true
+    expect(React.isValidElement(deserializedComponent)).to.equal(true);
   });
 });
