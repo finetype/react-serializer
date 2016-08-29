@@ -83,10 +83,10 @@ describe('core.deserialize', function() {
   });
   it('replaces serialized function string names with corresponding functions', function() {
     var node = ['p', { propertyName: { serializedFunction: 'propertyName0'} }];
-    var functions = { propertyName0: 'function (){ "dosomething" }' };
+    var functions = { propertyName0: function (){ "dosomething" } };
     var deserializedNode = core.deserialize(node, functions, false)
     expect(typeof deserializedNode.props.propertyName).to.equal('function')
-    expect(String(deserializedNode.props.propertyName)).to.equal(functions.propertyName0)
+    expect(String(deserializedNode.props.propertyName)).to.equal(String(functions.propertyName0))
     // ideally add nestedness to this test.
   });
 });
@@ -103,7 +103,7 @@ describe('core.serialize -> core.deserialize, integrated', function() {
     var postSerialization = core.serialize(preSerialization);
     var postDeserialization = core.deserialize(postSerialization.node, postSerialization.functions);
     expect(utils.deepEqualSO(postDeserialization, preSerialization)).to.equal(true) // try deepStrictEqual
-  }); // mock stripped-functions
+  });
   
   // does not yet work; maybe the skin-deep package's methedology could help, using shallowRenderers recursively?
   // it('produces the same output as was fed as input (with custom React class types, no function props)', function() {

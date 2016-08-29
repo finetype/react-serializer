@@ -22,13 +22,7 @@ program
 
     var serialized = serialize(toSerialize); // may need to be React.createElement(this.props.children)
     try {
-      fs.writeFileSync(fileToOutputNode, JSON.stringify(serialized.node,null,4));
-    }
-    catch(err) {
-      throw err;
-    }
-    console.log("\n The serialized, stringified output was saved as", fileToOutputNode);
-    try {
+      fs.writeFileSync(fileToOutputNode, JSON.stringify(serialized.node, null, 4));
       var functionsFilename = './serialized-functions.js';
       var functionsFileContents = "module.exports = {\n";
       for (key in serialized.functions) {
@@ -40,7 +34,10 @@ program
     catch(err) {
       throw err;
     }
-    console.log("\n functions were saved in serialized-functions.js; make sure to require those functions in the render component.\n");
+    console.log("\n The serialized, stringified output was saved as", fileToOutputNode);
+    if (Object.keys(serialized.functions).length) {
+      console.log("\n functions were saved in serialized-functions.js; make sure to require those functions in the Deserialize component.\n");
+    }
   });
 
 program.parse(process.argv);

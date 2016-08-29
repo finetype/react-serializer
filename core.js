@@ -28,7 +28,7 @@ module.exports = {
                 for (key in props) {
                     if (typeof props[key] === 'function') {
                         var reference = module.exports.uniqueKey(key, serializedFunctions, entropy)
-                        serializedFunctions[reference] = String(props[key]);
+                        serializedFunctions[reference] = props[key];
                         props[key] = { serializedFunction: reference };
                     }
                     // could add a safe-mode here via argument to check for props with values that are objects with keys that === serializedFunction preventatively
@@ -75,7 +75,7 @@ module.exports = {
     },
 
     deserialize: function(node, functions) {
-        // a node is ALWAYS an array with two or three members: [type, props[, children]],
+        // a node is ALWAYS an array with two-to-three members: [type, props[, children]],
         if (!Array.isArray(node) /*|| typeof node[0] !== 'string'*/ ||
             (typeof node[1] !== 'object' && typeof node[1] !== 'undefined')
             ) {
