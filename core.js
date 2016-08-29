@@ -6,8 +6,7 @@ module.exports = {
     },
 
     serialize: function(node) { // always the output of React.createElement()
-        // when doing so, does it need to handle strings? Or just nodes?
-        var serializedFunctions = {};
+        var serializedFunctions = {}; // will be populated by recurse() calls
         var entropy = 0; // used for developing unique identifying keys for functions
 
         function recurse(node) {
@@ -17,7 +16,6 @@ module.exports = {
                   throw new Error('Recursive serialization of custom react classes not yet implemented.')
                 }
                 else {
-                  // console.log(node)
                   throw new Error('cannot serialize this input. This would be non-deserializable. Aborting.');
                 }
             }
@@ -40,28 +38,18 @@ module.exports = {
                 if (props.hasOwnProperty('children')) {  // can be terminal string, array of subnodes, or single node.
                     var children = props.children;
 
-                    // var childIsAnObject = typeof children === 'object';
                     var childIsNotArray = !Array.isArray(children);
                     children = childIsNotArray ? [children] : children; // if string or node, inject into array for map call
                     children = children[0] === undefined ? [] : children;
-                    // try {
-                        serializedChildren = children.map(function(child) {
-                          try {
-                            var mapTo = recurse(child);
-                          }
-                          catch(err) {
-                            var mapTo = child;
-                            // console.log("err, so not recursing:", child);
-                          }
-                          return mapTo; 
-                        });
-                    // }
-                    // catch(err){
-                    //     console.log("\nERROR! (usually non-mapable children)");
-                    //     console.log(typeof children, children);
-                    //     console.log(node);
-                    //     // throw new Error(err);
-                    // }
+                    serializedChildren = children.map(function(child) {
+                      try {
+                          var mapTo = recurse(child);
+                      }
+                      catch(err) {
+                          var mapTo = child;
+                      }
+                      return mapTo; 
+                    });
                     delete props.children;
                 }
 
@@ -77,9 +65,8 @@ module.exports = {
             else {
                 output.push(null);  // React.createElement will expect second argument of null if there are no props.
             }
-            // console.log("\n serialized node is:", output)
             if (output[0] === undefined) throw new Error("undefined type!")
-            return output; // should be the ordered arguments necessary to pass in to React.createElement to generate this node.
+            return output; // should be the ordered arguments necessary to pass in to React.createElement (recursively) to generate this node.
         }
 
         var node = recurse(node);
