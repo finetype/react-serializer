@@ -9,31 +9,16 @@ like any other.
 To use:
 
 0. npm install react-serializer
-1. At the top of the file of the component you want to serialize, 
-import serialize from react-serializer
-2. Inside of your component's render function, you probably have 
-something like this:
-
-return (<div aProp={"something"}>text!</div>)
-
-Let's change it to:
-
-return <Serialize><div aProp={"something"}>text!</div></Serialize>
-
-3. Run the app in your browser, and where this component would have 
-previously been rendered, it should now instead download a json 
-representation of the component!
+1. create a new file that consists of *only* JSX (or React.createElement() calls) that uses *only* string classes (e.g. 'div'). At the time, the library cannot yet break down React.createClass calls fed in as types. This should essentially be everything that came after your return statement in your render function. (Note: You *can* have functions for props!)
+2. Your file should look something like the example-component.js file.
+3. Run: `serialize react <path to file to serialize> <output filename>`.
+  (an example: `$ serialize react ./ad-card.js testoutput.js`)
+4. You should have produced two files: one under the name your provided (e.g., `testoutput.js`), and one called `serialized-functions.js`.
 
 Now let's get it back!
 
-1. Let's go into the same component we just serialized.
-2. Switch the import statement around to instead import deserialize
-3. For demonstration purposes, we're going to copy the contents of the 
-file we downloaded and paste it into our module as the value of a 
-variable. Let's call that variable "ourSerializedComponent".
+1. Let's go into the component you just serialized, and import the 'Deserialize' module.
+2. Have the parent of this component pass in the values you copy/pasted out of testoutput.js as a prop, called "serialized" (or for now, just save it as a local variable, whatever).
+3. Have your render function `return (<Deserialize serialized={this.props.serialized} />
 4. Let's rewrite that render function again, this time to contain the 
-following:
-
-return <Deserialize serialized={ourSerializedComponent}></Deserialize>
-
 5. Voila!
