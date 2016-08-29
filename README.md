@@ -19,7 +19,8 @@ Now let's get it back!
 
 1. Let's go into the component you just serialized, and import the 'Deserialize' module.
 2. Have the parent of this component pass in the values you copy/pasted out of testoutput.js as a prop, called "serialized" (or for now, just save it as a local variable, whatever).
-3. Have your render function `return (<Deserialize serialized={this.props.serialized} />)`
-4. Voila!
+3. Make sure that Deserialize imports/has access to the `serialized-functions.js` that was generated when you ran `react serialize` in step 3 above. (Only important if you have things like click handler functions.)
+4. Have your render function `return (<Deserialize serialized={this.props.serialized} />)`
+5. Voila!
 
 You can install dev dependencies and run the test suite with `npm test`, which will help if you want to contribute pull requests. Please add new tests if you add new features.
