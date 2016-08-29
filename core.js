@@ -6,7 +6,7 @@ module.exports = {
     },
 
     serialize: function(node) { // always the output of React.createElement()
-        var serializedFunctions = {}; // will be populated by recurse() calls
+        var serializedFunctions = {}; // will be populated by recurse() calls if necessary
         var entropy = 0; // used for developing unique identifying keys for functions
 
         function recurse(node) {

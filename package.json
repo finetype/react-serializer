@@ -1,6 +1,6 @@
 {
   "name": "react-serializer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A module for serializing (and de-serializing) react components into (and out of) JSON.",
   "main": "index.js",
   "scripts": {
