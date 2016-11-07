@@ -1,4 +1,5 @@
 var adBadge = <div className="ad-badge">Ad</div>;
+// var X = function() {}
 
 <a className={"test"} target="_blank" onClick={function() {"do something"}} href={"href"}>
     <div className="inner">
@@ -10,7 +11,11 @@ var adBadge = <div className="ad-badge">Ad</div>;
                 </h5>
             </div>
         </div>
-        <div className="rate show">
+        <div className="rate show" property={1/*{serializedFunction: "yo"}*/}>
+            {true}
+            {4}
+            {'test'}
+            another test
             <span onClick={something => something} className="dolla-dolla-bill">$</span><span className="rate-value">{true ? 39 : 29}</span>
             <span onClick={truth => truth} styles={{color: 'black', height: 10}} className="rate-tag">{true ? '+ 5¢ per mile' : 'and up'}</span>
         </div>

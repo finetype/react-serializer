@@ -6,17 +6,17 @@ module.exports = {
     },
 
     serialize: function(node) { // always the output of React.createElement()
-        var serializedFunctions = {}; // will be populated by recurse() calls if necessary
-        var entropy = 0; // used for developing unique identifying keys for functions
+        var zipIns = {}; // will be populated by recurse() calls if necessary
+        var entropy = 0; // used for developing unique identifying keys for zipIns
 
         function recurse(node) {
             if (typeof node.type !== 'string') {
+                console.log("ran into problem serializing on node:\n\n", node);
                 if (typeof node.type === 'function') {
-                  console.log(node)
-                  throw new Error('Recursive serialization of custom react classes not yet implemented.')
+                    throw new Error('Recursive serialization of custom react classes not yet implemented. Please use only DOM-strings as types (e.g., "div", "h5", etc.')
                 }
                 else {
-                  throw new Error('cannot serialize this input. This would be non-deserializable. Aborting.');
+                    throw new Error('cannot serialize this input. This would be non-deserializable. Aborting.');
                 }
             }
             var output = [node.type];
@@ -24,14 +24,28 @@ module.exports = {
             if (node.hasOwnProperty('props')) {
                 var props = Object.assign({}, node.props || {}); // clone props, since they're also Object.frozen
 
-                // turn functions into strings representing them in a unique structure.
+                // automatically turn functions into zipIns, i.e. strings representing them in a unique structure.
                 for (key in props) {
                     if (typeof props[key] === 'function') {
-                        var reference = module.exports.uniqueKey(key, serializedFunctions, entropy)
-                        serializedFunctions[reference] = props[key];
-                        props[key] = { serializedFunction: reference };
+                        var reference = module.exports.uniqueKey(key, zipIns, entropy)
+                        zipIns[reference] = props[key];
+                        props[key] = { zipIn: reference };
                     }
-                    // could add a safe-mode here via argument to check for props with values that are objects with keys that === serializedFunction preventatively
+
+                    // should add feature to do this recursively for methods of property objects.
+                    else if (typeof props[key] === 'object' && props[key].hasOwnProperty('zipIn')) {
+                        if (zipIns.hasOwnProperty(props[key]['zipIn'])) {
+                            // in case the custom zipin specified overlaps with an existing zipin.
+                            console.log("WARNING! Your have two zipins using the same key. You either want " +
+                              "to use the same zipped-in content twice, or made a mistake. Duplicated zipin: ", props[key]['zipIn']);
+                        }
+                        else {
+                            // in case zipin was specified manually on content being serialized
+                            console.log("CAUTION: You have a prop of format: `{ zipIn: '" + props[key].zipIn + "' }`, indicating a custom zipIn. " +
+                                "If you do this, there is no way at this point to guarantee no overlapping keys.");
+                        }
+                        zipIns[props[key].zipIn] = '"CUSTOM ZIPIN SPECIFIED. Replace this string with a value before evaluation."';
+                    }
                 }
 
                 var serializedChildren;
@@ -42,13 +56,7 @@ module.exports = {
                     children = childIsNotArray ? [children] : children; // if string or node, inject into array for map call
                     children = children[0] === undefined ? [] : children;
                     serializedChildren = children.map(function(child) {
-                      try {
-                          var mapTo = recurse(child);
-                      }
-                      catch(err) {
-                          var mapTo = child;
-                      }
-                      return mapTo; 
+                        return typeof child.type === 'function' || typeof child.type === 'string' ? recurse(child) : child;
                     });
                     delete props.children;
                 }
@@ -71,15 +79,16 @@ module.exports = {
 
         var node = recurse(node);
 
-        return { node: node, functions: serializedFunctions };
+        return { node: node, zipIns: zipIns };
     },
 
-    deserialize: function(node, functions) {
+    // since this will be used in production, should we instead add an optional argument for silencing and redirecting error messages to?
+    deserialize: function(node, zipIns) {
         // a node is ALWAYS an array with two-to-three members: [type, props[, children]],
-        if (!Array.isArray(node) /*|| typeof node[0] !== 'string'*/ ||
+        if (!Array.isArray(node) ||
             (typeof node[1] !== 'object' && typeof node[1] !== 'undefined')
             ) {
-            console.log("about to fail on:", node);
+            // console.log("about to fail on:", node);
             throw new Error("hit a node I can't deserialize. Lame.");
         }
 
@@ -93,16 +102,25 @@ module.exports = {
         // ^an actual non-array object (or null) as the second property of an array is the signature of a node.
         children = childIsANode || typeof children === 'string' ? [children] : children; // if string or node, wrap in array for map call
 
-        context = this;
+        var context = this;
         children = children.map(function(descendant) { // descendants are ALWAYS actual nodes, or strings.
             var type = typeof descendant;
-            return type === 'boolean' || type === 'string' || type === 'number' || descendant === null ? descendant : context.deserialize(descendant, functions);
+            return type === 'string' || type === 'number' ||
+                type === 'boolean' || descendant === null ?
+                descendant : context.deserialize(descendant, zipIns);
         });
 
-        // re zip-in functions
-        for (key in props) {
-            if (typeof props[key] === 'object' && props[key].hasOwnProperty('serializedFunction')){
-                props[key] = functions[props[key].serializedFunction];
+        // re zip-in zipIns
+        for (var key in props) {
+            if (typeof props[key] === 'object' && props[key].hasOwnProperty('zipIn')){
+                if (zipIns.hasOwnProperty(props[key].zipIn)){
+                    props[key] = zipIns[props[key].zipIn];
+                }
+                else {
+                    // may want to enable quiet mode so that we can have 'optional' zipins... probably safer to be noisy and force
+                    // passing in blanks so that it's explicit ommission, preventing accidental silent mistakes.
+                    throw new Error("can't zip in what I don't have! requested zipin " + props[key].zipIn + " was not provided.");
+                }
             }
         }
 

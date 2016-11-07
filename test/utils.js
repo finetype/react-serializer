@@ -29,6 +29,8 @@ module.exports = {
                     "div",
                     { key: "divkey", className: "inner" },
                     '$',
+                    4,
+                    true,
                     React.createElement(
                         "span",
                         { className: "rate" },

@@ -41,7 +41,7 @@ describe('core.serialize', function() {
     expect(serializedElement[2][0][2][0][0]).to.equal("p")
   });
   it('serializes props correctly', function() {
-    var innerLayerNode = React.createElement("p", {a: "a"}, "hi!");
+    var innerLayerNode = React.createElement("p", {a: "a"}, "hi!", 4, true);
     var midLayerNode = React.createElement('div', null, innerLayerNode);
     var outerLayerNode = React.createElement('span', {c: "c"}, midLayerNode);
     var serializedElement = core.serialize(outerLayerNode).node;
@@ -60,13 +60,14 @@ describe('core.serialize', function() {
     var originalOuterOnClickFunction = String(utils.nestedReactElementWithBasicDOMTypesWithFunctions.props.onClick);
     var serialized = core.serialize(utils.nestedReactElementWithBasicDOMTypesWithFunctions);
     var serializedElement = serialized.node;
-    var serializedFunctions = serialized.functions;
-    // console.log(eval(serializedFunctions.clickHandler0))
-    expect(typeof serializedElement[1].onClick.serializedFunction).to.equal('string')
-    expect(typeof eval("(" + serializedFunctions[serializedElement[1].onClick.serializedFunction] + ")")).to.equal('function')
-    expect(String(serializedFunctions[serializedElement[1].onClick.serializedFunction])).to.equal(originalOuterOnClickFunction)
-    expect(Object.keys(serializedFunctions).length).to.equal(3)
+    var zipIns = serialized.zipIns;
+    expect(typeof serializedElement[1].onClick.zipIn).to.equal('string')
+    expect(typeof eval("(" + zipIns[serializedElement[1].onClick.zipIn] + ")")).to.equal('function')
+    expect(String(zipIns[serializedElement[1].onClick.zipIn])).to.equal(originalOuterOnClickFunction)
+    expect(Object.keys(zipIns).length).to.equal(3)
   });
+
+  // add tests around caution outputs for predefined zipins, duplicated zipin keys, etc.
 
   // does not work yet
   // it('serializes nodes with custom ReactClass functions as types', function() {
@@ -77,20 +78,24 @@ describe('core.serialize', function() {
 });
 
 describe('core.deserialize', function() {
-  // coverage for deserializing is not ideal.
+  // coverage for deserializing is not ideal, but acceptable because it is covered by integration test
   it('turns serialized input into React virtualDOM elements', function() {
     var deserialized = core.deserialize(utils.serializedNestedComponent);
     expect(React.isValidElement(deserialized)).to.equal(true);
     // ideally add better coverage here.
   });
   it('replaces serialized function string names with corresponding functions', function() {
-    var node = ['p', { propertyName: { serializedFunction: 'propertyName0'} }];
-    var functions = { propertyName0: function (){ "dosomething" } };
-    var deserializedNode = core.deserialize(node, functions, false)
+    var node = ['p', { propertyName: { zipIn: 'propertyName0'} }];
+    var zipIns = { propertyName0: function (){ "dosomething" } };
+    var deserializedNode = core.deserialize(node, zipIns, false)
+    console.log(typeof deserializedNode.props.propertyName);
+    console.log(String(deserializedNode.props.propertyName))
     expect(typeof deserializedNode.props.propertyName).to.equal('function')
-    expect(String(deserializedNode.props.propertyName)).to.equal(String(functions.propertyName0))
+    expect(String(deserializedNode.props.propertyName)).to.equal(String(zipIns.propertyName0))
     // ideally add nestedness to this test.
   });
+
+  // add coverage for throwing errors on non-provided zipin.
 });
 
 describe('core.serialize -> core.deserialize, integrated', function() {
@@ -103,11 +108,11 @@ describe('core.serialize -> core.deserialize, integrated', function() {
   it('produces the same output as was fed as input (DOM types only, with function props)', function() {
     var preSerialization = utils.nestedReactElementWithBasicDOMTypesWithFunctions
     var postSerialization = core.serialize(preSerialization);
-    var postDeserialization = core.deserialize(postSerialization.node, postSerialization.functions);
+    var postDeserialization = core.deserialize(postSerialization.node, postSerialization.zipIns);
     expect(utils.deepEqualSO(postDeserialization, preSerialization)).to.equal(true) // try deepStrictEqual
   });
   
-  // does not yet work; maybe the skin-deep package's methedology could help, using shallowRenderers recursively?
+  // does not yet work; maybe the skin-deep package's methedology could help, or using shallowRenderers recursively?
   // it('produces the same output as was fed as input (with custom React class types, no function props)', function() {
   //   var preSerialization = utils.nestedReactElementWithCustomClassTypes; React.createElement('p', null, React.createElement('p', {test: 'test'}, 'content'));
   //   var postSerialization = core.serialize(preSerialization, false);
@@ -121,7 +126,7 @@ describe('core.serialize -> core.deserialize, integrated', function() {
 // });
 
 describe('Deserialize React Class', function() {
-  // coverage for deserializing is not ideal.
+  // coverage could be better here
   it('renders the deserialized component', function() {
     var deserializedComponent = React.createElement(Deserialize, {serialized: utils.serializedNestedComponent});
     expect(React.isValidElement(deserializedComponent)).to.equal(true);
